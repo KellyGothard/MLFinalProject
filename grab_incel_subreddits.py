@@ -156,7 +156,7 @@ def main():
     print('Number of posts: '+str(len(df))+'\n')
     print('Number of users: '+str(len(df.author.unique()))+'\n')
     print('Number of subreddits: '+str(len(df.subreddit.unique()))+'\n')
-    
+    print('end')    
 
 if __name__=="__main__":
     main()
