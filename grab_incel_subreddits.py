@@ -116,7 +116,7 @@ def bow_from_df(df,subreddit,stemmer):
     document = document.split()
     document = [stemmer.lemmatize(word) for word in document]
     document = ' '.join(document)
-    for stopword in stopwords:
+    for stopword in set(stopwords.words('english')):
         document.replace(stopword,'')
     document = document.split()
     return document
