@@ -8,12 +8,10 @@ import praw
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
-from sklearn.svm import SVC
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import argparse
 import gzip
-from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
 def make_args():
@@ -59,7 +57,13 @@ def make_args():
                         help='use fraction of posts',
                         required=False,
                         default=None,
-                        type=str)    
+                        type=str)
+    parser.add_argument('-sr',
+                        '--subreddit',
+                        help='get posts from subreddit',
+                        required=False,
+                        default=None,
+                        type=str)   
     return parser.parse_args()
     
 def valid_date(d):
@@ -73,7 +77,7 @@ def valid_date(d):
 
 ########################## Read in Data ##########################
 
-def read_months(startdate,enddate,fraction,datadir):
+def read_months(startdate,enddate,fraction,datadir,subreddits):
     timeframe = []
     date = datetime.strptime(startdate,'%Y-%m-%d')
     while date <= datetime.strptime(enddate,'%Y-%m-%d'):
@@ -88,7 +92,8 @@ def read_months(startdate,enddate,fraction,datadir):
             for line in f:
                lines += 1
                post = ujson.loads(line)
-               posts.append([post['author'],post['subreddit'],post['created_utc'],post['body']])
+               if post['subreddit'] in subreddits:
+                   posts.append([post['author'],post['subreddit'],post['created_utc'],post['body']])
     print('JSON Posts Successfully Acquired: ' + str(len(posts))+'\n')
         
     # Create DF
@@ -102,9 +107,9 @@ def read_months(startdate,enddate,fraction,datadir):
 
 ###################### Subreddit Classification ######################
 
-def bow_from_df(df,subreddit,stemmer):
+def bow_from_df(df,stemmer):
     punctuations = '''!()\-[]{};:'"\,<>./?@#$%^&*_~|''';
-    posts = list(df[df['subreddit'] == subreddit]['body'])
+    posts = list(df['body'])
     s = ''
     for post in posts:
         for char in punctuations:
@@ -144,11 +149,12 @@ def main():
     DATADIR = args.inputdir
     FRAC = args.fraction
     STEM = WordNetLemmatizer()
+    SR = args.subreddit
     
     print('############## BEGINNING OF RUN ##############\n')
                     
-    df = read_months(STARTDATE,ENDDATE,FRAC,DATADIR)
-    bow = bow_from_df(df,'Incels',STEM)
+    df = read_months(STARTDATE,ENDDATE,FRAC,DATADIR,SR)
+    bow = bow_from_df(df,STEM)
     tfs = compare_corpora(df,bow)
     
     print(tfs)
@@ -156,7 +162,6 @@ def main():
     print('Number of posts: '+str(len(df))+'\n')
     print('Number of users: '+str(len(df.author.unique()))+'\n')
     print('Number of subreddits: '+str(len(df.subreddit.unique()))+'\n')
-    print('end')    
 
 if __name__=="__main__":
     main()
