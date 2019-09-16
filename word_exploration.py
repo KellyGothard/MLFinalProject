@@ -53,10 +53,10 @@ def make_args():
                         required=False,
                         default=None,
                         type=str)
-    # Pass a list of subreddits to filter the posts that are returned
-    parser.add_argument('-sr',
-                        '--subreddit',
-                        help='get posts from subreddit',
+    # Control subreddit for comparision - should already be in csv
+    parser.add_argument('-c',
+                        '--control',
+                        help='Control subreddit for comparision - should already be in csv',
                         required=False,
                         default=None,
                         type=str)   
