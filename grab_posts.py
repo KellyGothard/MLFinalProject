@@ -132,6 +132,8 @@ def main():
     print('Number of users: '+str(len(df.author.unique()))+'\n')
     print('Number of subreddits: '+str(len(df.subreddit.unique()))+'\n')
     
+    print(df.groupby(['subreddit']).count())
+    
     df.to_csv(STARTDATE+'_'+ENDDATE+'.csv')
 
 if __name__=="__main__":
