@@ -72,7 +72,7 @@ def valid_date(d):
 ########################## Read in Data ##########################
 
 def read_months(startdate,enddate,fraction,datadir,subreddits):
-    
+    print(subreddits)
     # Take in startdate and enddate strings and get files of dates in between
     timeframe = []
     date = datetime.strptime(startdate,'%Y-%m-%d')
