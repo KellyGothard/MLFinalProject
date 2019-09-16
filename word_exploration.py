@@ -70,67 +70,66 @@ def valid_date(d):
         raise argparse.ArgumentTypeError(msg)
 
 ########################## Read in Data ##########################
-
-def read_months(startdate,enddate,fraction,datadir,subreddits):
-    
-    # Take in startdate and enddate strings and get files of dates in between
-    timeframe = []
-    date = datetime.strptime(startdate,'%Y-%m-%d')
-    while date <= datetime.strptime(enddate,'%Y-%m-%d'):
-        timeframe.append(date.strftime('%Y-%m-%d'))
-        date = date + timedelta(days = 1)
-    print('Reddit comments from '+str(timeframe[0])+' to '+str(timeframe[-1])+'\n') 
-    
-    # Read in JSON data and filter by subreddit
-    posts = []
-    for date in timeframe:
-        lines = 0
-        with gzip.open(datadir+date+'.gz','rb') as f:
-            for line in f:
-               lines += 1
-               post = ujson.loads(line)
-               if post['subreddit'] in subreddits: # Filter by subreddit here
-                   posts.append([post['author'],post['subreddit'],post['created_utc'],post['body']])
-    print('JSON Posts Successfully Acquired: ' + str(len(posts))+'\n')
         
-    # Create DF - removed deleted authors, create datetime field from timestamp
-    df = pd.DataFrame(posts,columns = ['author','subreddit','timestamp','body'])
-    df = df[df['author'] != '[deleted]']
-    dt = []
-    for index,row in df.iterrows():
-        dt.append(datetime.fromtimestamp(row['timestamp']))
-    df['datetime'] = dt
-    return df
+def read_csv(path):
+    return pd.read_csv(path)
+
+###################### Subreddit Classification ######################
+
+def bow_from_df(df,stemmer):
+    punctuations = '''!()\-[]{};:'"\,<>./?@#$%^&*_~|''';
+    s = ''
+    
+    # Get posts as a list
+    posts = list(df['body'])
+    
+    # Remove punctuation and stopwords, create large string of posts, s
+    for post in posts:
+        for char in punctuations:
+            post = post.replace(char, '')
+            for stopword in set(stopwords.words('english')):
+                post = post.replace(stopword,'')
+        posttext = post.replace('\n','') + ' '
+        s += posttext
+    
+    # Remove URLs
+    document = re.sub(r'^https?:\/\/.*[\r\n]*', '', s, flags=re.MULTILINE)
+    
+    # Lower case, split string of words into list of words, lemmatize
+    document = document.lower()
+    document = document.split()
+    document = [stemmer.lemmatize(word) for word in document]
+    
+    return document
+
+def compare_corpora(df,control_subreddit,stemmer):
+    stemmer = PorterStemmer()
+    
+    # Get bag of words and control bag of words
+    target_bow = bow_from_df(df[df['subreddit' != control_subreddit]],stemmer)
+    control_bow = bow_from_df(df[df['subreddit' == control_subreddit]],stemmer)
+    
+    # Get TF-IDF transformation
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfs = tfidf.fit_transform([target_bow,control_bow])
+    
+    return tfs
+    
 
 def main():
     
     args = make_args()
     
-    STARTDATE = args.startdate
-    ENDDATE = args.enddate
-    DATADIR = args.inputdir
-    FRAC = args.fraction
-    SR = args.subreddit
-    SR = SR.split(',')
+    path = args.inputdir
+    STEM = WordNetLemmatizer()
+    CONTROL = args.control
     
     print('############## BEGINNING OF RUN ##############\n')
-          
-    # PRAW reddit client
-    reddit = praw.Reddit(client_id='gz2ObTGldvgEMg',
-                         client_secret='6r1S2-WPPhyQDJmNuh8aW-b1eWY',
-                         user_agent='project')
-    
-    # Get random subreddit
-    control_subreddit = reddit.subreddit('random')
-    
-    SR.append(control_subreddit)
                     
-    df = read_months(STARTDATE,ENDDATE,FRAC,DATADIR,SR)
+    df = read_csv(path)
+    tfs = compare_corpora(df,CONTROL,STEM)
     
-    
-    print('Number of posts: '+str(len(df))+'\n')
-    print('Number of users: '+str(len(df.author.unique()))+'\n')
-    print('Number of subreddits: '+str(len(df.subreddit.unique()))+'\n')
+    print(tfs)
 
 if __name__=="__main__":
     main()
