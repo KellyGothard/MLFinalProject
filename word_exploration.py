@@ -106,8 +106,8 @@ def compare_corpora(df,control_subreddit,stemmer):
     stemmer = PorterStemmer()
     
     # Get bag of words and control bag of words
-    target_bow = bow_from_df(df[df['subreddit' != control_subreddit]],stemmer)
-    control_bow = bow_from_df(df[df['subreddit' == control_subreddit]],stemmer)
+    target_bow = bow_from_df(df[df['subreddit'] != control_subreddit],stemmer)
+    control_bow = bow_from_df(df[df['subreddit'] == control_subreddit],stemmer)
     
     # Get TF-IDF transformation
     tfidf = TfidfVectorizer(stop_words='english')
