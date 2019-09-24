@@ -85,6 +85,7 @@ def bow_from_df(df,stemmer):
     
     # Remove punctuation and stopwords, create large string of posts, s
     for post in posts:
+        print(post)
         for char in punctuations:
             post = post.replace(char, '')
             for stopword in set(stopwords.words('english')):
