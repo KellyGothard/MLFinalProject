@@ -115,7 +115,6 @@ def compare_corpora(df,control_subreddit,stemmer):
     tfs = tfidf.fit_transform([target_bow,control_bow])
     
     return tfs
-    
 
 def main():
     
