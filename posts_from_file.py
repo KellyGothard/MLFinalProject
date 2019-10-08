@@ -72,7 +72,7 @@ def valid_date(d):
 ########################## Read in Data ##########################
 
 def read_months(startdate,enddate,fraction,datadir,subreddits):
-    
+    print(subreddits)
     # Take in startdate and enddate strings and get files of dates in between
     timeframe = []
     date = datetime.strptime(startdate,'%Y-%m-%d')
@@ -102,50 +102,6 @@ def read_months(startdate,enddate,fraction,datadir,subreddits):
     df['datetime'] = dt
     return df
 
-###################### Subreddit Classification ######################
-
-def bow_from_df(df,stemmer):
-    
-    punctuations = '''!()\-[]{};:'"\,<>./?@#$%^&*_~|''';
-    s = ''
-    
-    # Get posts as a list
-    posts = list(df['body'])
-    
-    # Remove punctuation and stopwords, create large string of posts, s
-    for post in posts:
-        for char in punctuations:
-            post = post.replace(char, '')
-            for stopword in set(stopwords.words('english')):
-                post = post.replace(stopword,'')
-        posttext = post.replace('\n','') + ' '
-        s += posttext
-    
-    # Remove URLs
-    document = re.sub(r'^https?:\/\/.*[\r\n]*', '', s, flags=re.MULTILINE)
-    
-    # Lower case, split string of words into list of words, lemmatize
-    document = document.lower()
-    document = document.split()
-    document = [stemmer.lemmatize(word) for word in document]
-    
-    return document
-
-def compare_corpora(df,control_subreddit,stemmer):
-    
-    stemmer = PorterStemmer()
-    
-    # Get bag of words and control bag of words
-    target_bow = bow_from_df(df[df['subreddit' != control_subreddit]],stemmer)
-    control_bow = bow_from_df(df[df['subreddit' == control_subreddit]],stemmer)
-    
-    # Get TF-IDF transformation
-    tfidf = TfidfVectorizer(stop_words='english')
-    tfs = tfidf.fit_transform([target_bow,control_bow])
-    
-    return tfs
-    
-
 def main():
     
     args = make_args()
@@ -154,7 +110,6 @@ def main():
     ENDDATE = args.enddate
     DATADIR = args.inputdir
     FRAC = args.fraction
-    STEM = WordNetLemmatizer()
     SR = args.subreddit
     SR = SR.split(',')
     
@@ -171,13 +126,15 @@ def main():
     SR.append(control_subreddit)
                     
     df = read_months(STARTDATE,ENDDATE,FRAC,DATADIR,SR)
-    tfs = compare_corpora(df,control_subreddit,STEM)
     
-    print(tfs)
     
     print('Number of posts: '+str(len(df))+'\n')
     print('Number of users: '+str(len(df.author.unique()))+'\n')
     print('Number of subreddits: '+str(len(df.subreddit.unique()))+'\n')
+    
+    print(df.groupby(['subreddit']).count())
+    
+    df.to_csv(STARTDATE+'_'+ENDDATE+'.csv')
 
 if __name__=="__main__":
     main()
