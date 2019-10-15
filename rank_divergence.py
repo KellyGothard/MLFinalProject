@@ -91,6 +91,7 @@ def bow_from_df(df,stemmer):
     for p in posts:
         if type(p) != str:
             del p
+    print(posts[1270])
     s = ' '.join(posts)
     s = s.translate(str.maketrans('', '', string.punctuation))
 
