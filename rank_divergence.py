@@ -16,6 +16,7 @@ from nltk.stem.porter import PorterStemmer
 from collections import Counter
 import string
 import matplotlib.pyplot as plt
+import numpy as np
 
 def make_args():
     description = 'Generalized jobs submitter for PBS on VACC. Tailored to jobs that can be chunked based on datetime.' \
@@ -155,13 +156,13 @@ def main():
     plt.savefig(sr1+'_'+sr2+'_rankdivscatter.png')
     plt.close()
 
-    plt.loglog(rank_df['rank_x'],rank_df['count_x'])
-    plt.title('Zipf Dist of r/Braincel Words')
+    plt.scatter(np.log(rank_df['rank_x']),np.log(rank_df['count_x']))
+    plt.title('Zipf Dist of '+sr1+' Words')
     plt.savefig(sr1+'_'+sr2+'_zipfs1.png')
     plt.close()
 
-    plt.loglog(rank_df['rank_y'],rank_df['count_y'])
-    plt.title('Zipf Dist of r/WaltDisneyWorld Words')
+    plt.scatter(np.log(rank_df['rank_y']),np.log(rank_df['count_y']))
+    plt.title('Zipf Dist of '+sr2+' Words')
     plt.savefig(sr1+'_'+sr2+'_zipfs2.png')
     plt.close()
 
