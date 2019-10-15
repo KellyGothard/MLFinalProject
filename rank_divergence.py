@@ -90,7 +90,7 @@ def bow_from_df(df,stemmer):
     posts = list(df['body'])
     for p in posts:
         if type(p) != str:
-            print(p)
+            del p
     s = ' '.join(posts)
     s = s.translate(str.maketrans('', '', string.punctuation))
 
