@@ -143,7 +143,7 @@ def main():
     sr2 = path2.split('_')[0]
     
     rank_df['rank_div'] = rank_df['rank_y'] - rank_df['rank_x']
-    rank_df = rank_df.sort_values(['rank_y','rank_div'])
+    rank_df = rank_df.sort_values('rank_div')
     
     plt.hist(rank_df['rank_div'])
     plt.title('Rank Div Dist: r/Braincel and r/WaltDisneyWorld Words')
