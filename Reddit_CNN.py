@@ -4,7 +4,14 @@
 # # Based on post from:
 # https://towardsdatascience.com/natural-language-processing-classification-using-deep-learning-and-word2vec-50cbadd3bd6a
 
+import random
+random.seed(0)
 import pandas as pd
+import numpy as np
+np.random.seed(0)
+
+import tensorflow as tf
+
 import os
 import re
 from gensim.models.phrases import Phrases, Phraser
@@ -39,14 +46,6 @@ print(posts.head())
 
 
 
-# In[4]:
-#
-
-
-# # # getting a list of word vectors. limit to 10000. each is of 200 dimensions
-# word_vectors = [w2v_model[w] for w in list(w2v_model.vocab.keys())[:5000]]
-
-
 #First defining the X (input), and the y (output)
 y = posts['banned'].values
 X = np.array(posts["tokens"])
@@ -65,48 +64,6 @@ except:
     print("loaded from model file")
 
 print("Done loading w2v")
-
-#
-# vectorizer = TfidfVectorizer(analyzer=lambda x: x, min_df=10)
-# matrix = vectorizer.fit_transform([x for x in X_train])
-# tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
-# print ('vocab size :', len(tfidf))
-
-
-# In[11]:
-
-#
-# def buildWordVector(tokens, size):
-#     vec = np.zeros(size).reshape((1, size))
-#     count = 0.
-#     for word in tokens:
-#         try:
-#             vec += w2v_model[word].reshape((1, size)) * tfidf[word]
-#             count += 1.
-#         except KeyError: # handling the case where the token is not
-#                          # in the corpus. useful for testing.
-#             continue
-#     if count != 0:
-#         vec /= count
-#     return vec
-#
-
-# In[12]:
-
-#
-#
-# train_vecs_w2v = np.concatenate([buildWordVector(z, 300) for z in map(lambda x: x, X_train)])
-# train_vecs_w2v = scale(train_vecs_w2v)
-#
-# test_vecs_w2v = np.concatenate([buildWordVector(z, 300) for z in map(lambda x: x, X_test)])
-# test_vecs_w2v = scale(test_vecs_w2v)
-#
-# print ('shape for training set : ',train_vecs_w2v.shape,
-#       '\nshape for test set : ', test_vecs_w2v.shape)
-#
-
-
-# In[18]:
 
 
 all_words = [word for tokens in X for word in tokens]
@@ -147,13 +104,7 @@ test_sequences = tokenizer.texts_to_sequences(X_test.tolist())
 test_cnn_data = pad_sequences(test_sequences, maxlen=MAX_SEQUENCE_LENGTH)
 
 
-# In[40]:
-
-
 print(train_cnn_data[0].shape)
-
-
-# In[20]:
 
 
 from keras.layers import concatenate
@@ -203,30 +154,31 @@ def ConvNet(embeddings, max_sequence_length, num_words, embedding_dim, trainable
     return model
 
 
-# In[21]:
-
-
 model = ConvNet(train_embedding_weights, MAX_SEQUENCE_LENGTH, len(train_word_index)+1, EMBEDDING_DIM, False)
 
-
-# In[ ]:
-
-
-history = model.fit(train_cnn_data, y_train, epochs=10, batch_size=32,
+history = model.fit(train_cnn_data, y_train, epochs=3, batch_size=64,
                    validation_data=(test_cnn_data, y_test))
-
-
-# In[ ]:
-
 
 loss, accuracy = model.evaluate(train_cnn_data, y_train, verbose=False)
 print("Training Accuracy: {:.4f}".format(accuracy))
 loss, accuracy = model.evaluate(test_cnn_data, y_test, verbose=False)
 print("Testing Accuracy:  {:.4f}".format(accuracy))
 
+classes = [0,1]
 
-# In[ ]:
+y_pred=np.array([1 if prd > 0.5 else 0 for prd in model.predict(test_cnn_data)])
+print(y_pred)
 
+sess = tf.compat.v1.Session()
 
+con_mat = sess.run(tf.math.confusion_matrix(labels=y_test, predictions=y_pred))
 
+con_mat_norm = np.around(con_mat.astype('float') / con_mat.sum(axis=1)[:, np.newaxis], decimals=2)
 
+con_mat_df = pd.DataFrame(con_mat_norm,
+                          index=classes,
+                          columns=classes)
+print(con_mat)
+print(con_mat_df)
+print("row: what should have been predicted")
+print("column: what was predicted")
