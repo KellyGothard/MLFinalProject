@@ -23,98 +23,87 @@ from keras.layers.merge import Concatenate
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import RegexpTokenizer
 from sklearn.metrics import confusion_matrix
+import gensim
+import pickle
 
 print("Done importing")
 # In[2]:
 
+W2V_Pickle = "/users/d/m/dmatthe1/OtherProjects/DBs/w2v.p"
+
 CSV_NAME = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data.csv"
 
-df = pd.read_csv(CSV_NAME)
-posts = df[["document", "banned"]].copy()
+posts = pd.read_csv(CSV_NAME)
+posts["tokens"] = posts["document"].apply(lambda x: x.split(" "))
+print(posts.head())
 
-
-
-# In[3]:
-
-
-df_clean = posts
-t = time()
-
-
-tokenizer = RegexpTokenizer(r'\w+')
-df_clean['clean'] = df_clean['body'].astype('str') 
-
-df_clean["tokens"] = df_clean["clean"].apply(tokenizer.tokenize)
-# delete Stop Words
-
-print('Time to tokenize everything: {} mins'.format(round((time() - t) / 60, 2)))
-print(df_clean.head())
-
-print("Done tokenizing")
 
 
 # In[4]:
+#
 
 
-import gensim
-w2v_model = gensim.models.KeyedVectors.load_word2vec_format('Data/GoogleNews-vectors-negative300.bin', binary=True)
-print("Done loading w2v")
-
-# getting a list of word vectors. limit to 10000. each is of 200 dimensions
-word_vectors = [w2v_model[w] for w in list(w2v_model.vocab.keys())[:5000]]
-
-print("Done importing")
-# In[8]:
+# # # getting a list of word vectors. limit to 10000. each is of 200 dimensions
+# word_vectors = [w2v_model[w] for w in list(w2v_model.vocab.keys())[:5000]]
 
 
 #First defining the X (input), and the y (output)
-y = df_clean['banned'].values
-X = np.array(df_clean["tokens"])
+y = posts['banned'].values
+X = np.array(posts["tokens"])
 
 #And here is the train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1, random_state = 0)
 
 
-# In[9]:
+print("loading w2v")
+try:
+    w2v_model = pickle.load(open(W2V_Pickle, "rb"))
+    print("loaded from pickle")
+except:
+    w2v_model = gensim.models.KeyedVectors.load_word2vec_format('Data/GoogleNews-vectors-negative300.bin', binary=True)
+    pickle.dump(w2v_model, open(W2V_Pickle, "wb"))
+    print("loaded from model file")
 
+print("Done loading w2v")
 
-vectorizer = TfidfVectorizer(analyzer=lambda x: x, min_df=10)
-matrix = vectorizer.fit_transform([x for x in X_train])
-tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
-print ('vocab size :', len(tfidf))
+#
+# vectorizer = TfidfVectorizer(analyzer=lambda x: x, min_df=10)
+# matrix = vectorizer.fit_transform([x for x in X_train])
+# tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
+# print ('vocab size :', len(tfidf))
 
 
 # In[11]:
 
-
-def buildWordVector(tokens, size):
-    vec = np.zeros(size).reshape((1, size))
-    count = 0.
-    for word in tokens:
-        try:
-            vec += w2v_model[word].reshape((1, size)) * tfidf[word]
-            count += 1.
-        except KeyError: # handling the case where the token is not
-                         # in the corpus. useful for testing.
-            continue
-    if count != 0:
-        vec /= count
-    return vec
-
+#
+# def buildWordVector(tokens, size):
+#     vec = np.zeros(size).reshape((1, size))
+#     count = 0.
+#     for word in tokens:
+#         try:
+#             vec += w2v_model[word].reshape((1, size)) * tfidf[word]
+#             count += 1.
+#         except KeyError: # handling the case where the token is not
+#                          # in the corpus. useful for testing.
+#             continue
+#     if count != 0:
+#         vec /= count
+#     return vec
+#
 
 # In[12]:
 
-
-
-train_vecs_w2v = np.concatenate([buildWordVector(z, 300) for z in map(lambda x: x, X_train)])
-train_vecs_w2v = scale(train_vecs_w2v)
-
-test_vecs_w2v = np.concatenate([buildWordVector(z, 300) for z in map(lambda x: x, X_test)])
-test_vecs_w2v = scale(test_vecs_w2v)
-
-print ('shape for training set : ',train_vecs_w2v.shape,
-      '\nshape for test set : ', test_vecs_w2v.shape)
-
+#
+#
+# train_vecs_w2v = np.concatenate([buildWordVector(z, 300) for z in map(lambda x: x, X_train)])
+# train_vecs_w2v = scale(train_vecs_w2v)
+#
+# test_vecs_w2v = np.concatenate([buildWordVector(z, 300) for z in map(lambda x: x, X_test)])
+# test_vecs_w2v = scale(test_vecs_w2v)
+#
+# print ('shape for training set : ',train_vecs_w2v.shape,
+#       '\nshape for test set : ', test_vecs_w2v.shape)
+#
 
 
 # In[18]:
@@ -129,8 +118,8 @@ print("Max sentence length is %s" % max(all_sentence_lengths))
 
 ####################### CHANGE THE PARAMETERS HERE #####################################
 EMBEDDING_DIM = 300 # how big is each word vector
-MAX_VOCAB_SIZE = 81765 # old: 18399# how many unique words to use (i.e num rows in embedding vector)
-MAX_SEQUENCE_LENGTH = 1871 # old: 53 # max number of words in a comment to use
+MAX_VOCAB_SIZE = len(ALL_VOCAB) # old: 18399# how many unique words to use (i.e num rows in embedding vector)
+MAX_SEQUENCE_LENGTH = max(all_sentence_lengths) # old: 53 # max number of words in a comment to use
 
 
 # In[30]:
@@ -140,7 +129,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 tokenizer = Tokenizer(num_words=MAX_VOCAB_SIZE, lower=True, char_level=False)
 
-tokenizer.fit_on_texts(df_clean["clean"].tolist())
+tokenizer.fit_on_texts(posts["tokens"].tolist())
 training_sequences = tokenizer.texts_to_sequences(X_train.tolist())
 
 train_word_index = tokenizer.word_index
@@ -223,7 +212,7 @@ model = ConvNet(train_embedding_weights, MAX_SEQUENCE_LENGTH, len(train_word_ind
 # In[ ]:
 
 
-history = model.fit(train_cnn_data, y_train, epochs=10, batch_size=64,
+history = model.fit(train_cnn_data, y_train, epochs=10, batch_size=32,
                    validation_data=(test_cnn_data, y_test))
 
 

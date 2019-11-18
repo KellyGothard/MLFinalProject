@@ -68,7 +68,7 @@ for i in range(len(not_banned_res)//DOC_SIZE):
 
 print("saving to CSV")
 writer = csv.writer(open(CSV_NAME, "w"), quoting=csv.QUOTE_MINIMAL)
-writer.writerow(["document", "suspect"])
+writer.writerow(["document", "banned"])
 for row in banned_arr:
     writer.writerow([' '.join(row), 1])
 for row in not_banned_arr:
