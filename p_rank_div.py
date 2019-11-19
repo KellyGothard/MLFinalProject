@@ -108,10 +108,12 @@ def rankdiv_scatter(rank_df,out):
     ax.spines['top'].set_visible(False)
     plt.savefig(out+'rankdiv_scatter.png')
     plt.close()
+    
+    
 
 def main():
     args = make_args()
-    path = args.inputdir
+    path = args.inputdir`
     out = args.outdir
     
     rank_df = read_csv(path)
