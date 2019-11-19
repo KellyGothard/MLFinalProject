@@ -17,6 +17,7 @@ from collections import Counter
 import string
 import matplotlib.pyplot as plt
 import numpy as np
+import plotly.express as px
 
 def make_args():
     description = 'Generalized jobs submitter for PBS on VACC. Tailored to jobs that can be chunked based on datetime.' \
@@ -120,6 +121,7 @@ def word_counts(df,stemmer):
 
 def rank_divergence(corpus1_df,corpus2_df):
     merged = corpus1_df.merge(corpus2_df, on = 'word')
+    merged['rank_div'] = merged['rank_y'] - merged['rank_x']
     return merged
 
 def main():
@@ -135,7 +137,6 @@ def main():
     df2 = read_csv(path2)
     
     corpus1_df = word_counts(df1,STEM)
-    print(corpus1_df.iloc[200:500])
     corpus2_df = word_counts(df2,STEM)
     
     rank_df = rank_divergence(corpus1_df,corpus2_df)
@@ -143,33 +144,14 @@ def main():
     sr1 = path1.split('_')[0]
     sr2 = path2.split('_')[0]
     
-    rank_df['rank_div'] = rank_df['rank_y'] - rank_df['rank_x']
+    
     rank_df = rank_df.sort_values('rank_div')
-    
-    plt.hist(rank_df['rank_div'])
-    plt.title('Rank Div Dist: r/Braincel and r/WaltDisneyWorld Words')
-    plt.savefig(sr1+'_'+sr2+'_rankdivhist.png')
-    plt.close()
-    
-    plt.scatter(rank_df['rank_x'],rank_df['rank_y'])
-    plt.title('Word Rank in r/Braincel vs Rank in r/WaltDisneyWorld')
-    plt.savefig(sr1+'_'+sr2+'_rankdivscatter.png')
-    plt.close()
-
-    plt.scatter(np.log(rank_df['rank_x']),np.log(rank_df['count_x']))
-    plt.title('Zipf Dist of '+sr1+' Words')
-    plt.savefig(sr1+'_'+sr2+'_zipfs1.png')
-    plt.close()
-
-    plt.scatter(np.log(rank_df['rank_y']),np.log(rank_df['count_y']))
-    plt.title('Zipf Dist of '+sr2+' Words')
-    plt.savefig(sr1+'_'+sr2+'_zipfs2.png')
-    plt.close()
 
     rank_df.to_csv(sr1+'_'+sr2+'_rankdiv.csv')
     
     corpus1_df.sort_values('rank')
     corpus1_df.to_csv(sr1+'_rankdiv.csv')
+    
     
 if __name__=="__main__":
     main()
