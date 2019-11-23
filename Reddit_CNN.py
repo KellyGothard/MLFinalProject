@@ -38,7 +38,7 @@ print("Done importing")
 
 W2V_Pickle = "/users/d/m/dmatthe1/OtherProjects/DBs/w2v.p"
 
-CSV_NAME = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data.csv"
+CSV_NAME = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data_Rand_Comments.csv"
 
 posts = pd.read_csv(CSV_NAME)
 posts["tokens"] = posts["document"].apply(lambda x: x.split(" "))

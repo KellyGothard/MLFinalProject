@@ -6,29 +6,30 @@ from collections import deque
 import pickle
 import csv
 
+print("import done",  flush=True)
 fname = "/users/d/m/dmatthe1/OtherProjects/DBs/RC_2016-10.db"
-pickle_name = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data.p"
-CSV_NAME = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data.csv"
+pickle_name = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data_Rand_Comments.p"
+CSV_NAME = "/users/d/m/dmatthe1/OtherProjects/DBs/2016-10-Data_Rand_Comments.csv"
 
 DATA_POINTS = int(4e5)
 
 DOC_SIZE = 200
 tokenizer = RegexpTokenizer(r'\w+')
-
+print("beginning to load posts",  flush=True)
 try:
     print("Selecting posts")
     tmp_banned, tmp_not_banned = pickle.load(open(pickle_name, "rb"))
     print("successfully read from pickle")
 except:
-    print("Using sqlite")
+    print("Using sqlite", flush=True)
     conn = sqlite3.connect(fname)
     c = conn.cursor()
-    c.execute('SELECT  body FROM Comments WHERE banned == "True"  and suspect == "False" LIMIT %d'%DATA_POINTS) # ORDER BY RANDOM()
+    c.execute('SELECT  body FROM Comments WHERE banned == "True"  and suspect == "False" ORDER BY RANDOM() LIMIT %d'%DATA_POINTS) # ORDER BY RANDOM()
     print("1/2 queried")
     tmp_banned = c.fetchall()
     print("1/2 read")
 
-    c.execute('SELECT  body FROM Comments WHERE banned == "False" and suspect == "False" LIMIT %d'%DATA_POINTS) # ORDER BY RANDOM()
+    c.execute('SELECT  body FROM Comments WHERE banned == "False" and suspect == "False" ORDER BY RANDOM() LIMIT %d'%DATA_POINTS) # ORDER BY RANDOM()
     print("2/2 queried")
     tmp_not_banned = c.fetchall()
     print("2/2 read")
