@@ -15,7 +15,6 @@ import seaborn as sns
 #import scikitplot as skplt
 import argparse
 
-
 def make_args():
     description = 'Generalized jobs submitter for PBS on VACC. Tailored to jobs that can be chunked based on datetime.' \
                   ' Scripts to be run MUST have -o output argument. \n Output will be saved in log files with the first 3' \
@@ -26,7 +25,6 @@ def make_args():
                         help='input directory 2',
                         required=True,
                         type=str)
-    parser = argparse.ArgumentParser(description=description,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i2',
                         '--inputdir2',
                         help='input directory 2',
