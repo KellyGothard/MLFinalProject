@@ -20,11 +20,10 @@ def make_args():
     description = 'Generalized jobs submitter for PBS on VACC. Tailored to jobs that can be chunked based on datetime.' \
                   ' Scripts to be run MUST have -o output argument. \n Output will be saved in log files with the first 3' \
                   ' characters of args.flexargs and the start date for the job'
-    # Specify directory that reddit posts live in in .pbs script
     parser = argparse.ArgumentParser(description=description,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i1',
                         '--inputdir1',
-                        help='input directory 1',
+                        help='input directory 2',
                         required=True,
                         type=str)
     parser = argparse.ArgumentParser(description=description,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -33,8 +32,6 @@ def make_args():
                         help='input directory 2',
                         required=True,
                         type=str)
-    # Where your output should be dumped - recommend making a folder for each pbs script 
-    # output to keep it clean, as well as a timestamp so you know the order of error logs
     parser.add_argument('-o',
                         '--outdir',
                         help='output directory (will be passed to args.script with -o argument)',
