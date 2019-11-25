@@ -43,8 +43,8 @@ def make_args():
                         help='output directory (will be passed to args.script with -o argument)',
                         required=True,
                         type=str)
-    parser.add_argument('-n',
-                        '--name',
+    parser.add_argument('-t',
+                        '--title',
                         help='filename',
                         required=True,
                         type=str)
@@ -251,8 +251,8 @@ def get_data_rawposts(path1, path2):
     return sr_df, rank_df
         
 def get_data_wordlist(path1, path2):
-    banned_df = pd.read_csv(path1)
-    notbanned_df = pd.read_csv(path2)
+    banned_df = pd.read_csv(path1, sep=' ')
+    notbanned_df = pd.read_csv(path2, sep = ' ')
     
     data = []
     
