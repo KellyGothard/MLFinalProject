@@ -1,8 +1,6 @@
 import pandas as pd
-from datetime import datetime
 from sklearn import metrics
 import re
-from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from collections import Counter
 import string
@@ -10,12 +8,11 @@ from sklearn.model_selection import cross_val_predict
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 import seaborn as sns
-import scikitplot as skplt
+#import scikitplot as skplt
 import argparse
 
 
@@ -203,7 +200,7 @@ def confusion_plot(array,name):
 
 def roc(clf, X,y):
     y_probas = clf.predict_proba(X)
-    skplt.metrics.plot_roc(y, y_probas)
+    #skplt.metrics.plot_roc(y, y_probas)
 
 def cross_val(clf,X,y,name):
     print(name)
