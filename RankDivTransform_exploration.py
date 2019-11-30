@@ -1,8 +1,6 @@
 import pandas as pd
-from datetime import datetime
 from sklearn import metrics
 import re
-from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from collections import Counter
 import string
@@ -10,41 +8,35 @@ from sklearn.model_selection import cross_val_predict
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 import seaborn as sns
-import scikitplot as skplt
+#import scikitplot as skplt
 import argparse
-
 
 def make_args():
     description = 'Generalized jobs submitter for PBS on VACC. Tailored to jobs that can be chunked based on datetime.' \
                   ' Scripts to be run MUST have -o output argument. \n Output will be saved in log files with the first 3' \
                   ' characters of args.flexargs and the start date for the job'
-    # Specify directory that reddit posts live in in .pbs script
     parser = argparse.ArgumentParser(description=description,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i1',
                         '--inputdir1',
-                        help='input directory 1',
+                        help='input directory 2',
                         required=True,
                         type=str)
-    parser = argparse.ArgumentParser(description=description,formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i2',
                         '--inputdir2',
                         help='input directory 2',
                         required=True,
                         type=str)
-    # Where your output should be dumped - recommend making a folder for each pbs script 
-    # output to keep it clean, as well as a timestamp so you know the order of error logs
     parser.add_argument('-o',
                         '--outdir',
                         help='output directory (will be passed to args.script with -o argument)',
                         required=True,
                         type=str)
-    parser.add_argument('-n',
-                        '--name',
+    parser.add_argument('-t',
+                        '--title',
                         help='filename',
                         required=True,
                         type=str)
@@ -203,7 +195,7 @@ def confusion_plot(array,name):
 
 def roc(clf, X,y):
     y_probas = clf.predict_proba(X)
-    skplt.metrics.plot_roc(y, y_probas)
+    #skplt.metrics.plot_roc(y, y_probas)
 
 def cross_val(clf,X,y,name):
     print(name)
@@ -251,8 +243,8 @@ def get_data_rawposts(path1, path2):
     return sr_df, rank_df
         
 def get_data_wordlist(path1, path2):
-    banned_df = pd.read_csv(path1)
-    notbanned_df = pd.read_csv(path2)
+    banned_df = pd.read_csv(path1, sep=' ')
+    notbanned_df = pd.read_csv(path2, sep = ' ')
     
     data = []
     
