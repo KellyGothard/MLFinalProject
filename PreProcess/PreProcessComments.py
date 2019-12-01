@@ -21,8 +21,8 @@ in_name = "RC_2016-10"
 
 REDDIT_FILE = "../Data/%s.bz2" % in_name
 
-TXT_banned = "../Data/%s_banned.txt" % in_name
-TXT_not_banned = "../Data/%s_notbanned.txt" %in_name
+TXT_banned = "../Data/Generated/%s_banned.txt" % in_name
+TXT_not_banned = "../Data/Generated/%s_notbanned.txt" %in_name
 
 # construct a tokenizer for cleaning posts.
 tokenizer = RegexpTokenizer(r"\w+")
