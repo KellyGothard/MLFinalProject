@@ -1,17 +1,19 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # Based on post from:
+#inspired by:
 # https://towardsdatascience.com/natural-language-processing-classification-using-deep-learning-and-word2vec-50cbadd3bd6a
 
+# imports + set random seeds.
+SEED = 0
 import random
-random.seed(0)
-import pandas as pd
+random.seed(SEED)
+
 import numpy as np
-np.random.seed(0)
+np.random.seed(SEED)
 
 import tensorflow as tf
+tf.reset_default_graph()
+tf.set_random_seed(SEED)
 
+import pandas as pd
 import os
 import re
 from gensim.models.phrases import Phrases, Phraser
@@ -32,29 +34,31 @@ from nltk.tokenize import RegexpTokenizer
 from sklearn.metrics import confusion_matrix
 import gensim
 import pickle
-
-W2V_Pickle = "/users/d/m/dmatthe1/OtherProjects/DBs/w2v.p"
 print("Done importing")
 
+
+
+# Load W2V
+W2V_Pickle = "../Data/Cached/w2v.p"
 print("loading w2v")
 try:
     w2v_model = pickle.load(open(W2V_Pickle, "rb"))
     print("loaded from pickle")
 except:
-    w2v_model = gensim.models.KeyedVectors.load_word2vec_format('Data/GoogleNews-vectors-negative300.bin', binary=True)
+    w2v_model = gensim.models.KeyedVectors.load_word2vec_format('../Data/GoogleNews-vectors-negative300.bin', binary=True)
     pickle.dump(w2v_model, open(W2V_Pickle, "wb"))
     print("loaded from model file")
 
 print("Done loading w2v")
 
-# In[2]:
+
 SEQ_LENS = [200]
 BASE_SEQLEN = 200
 
 for SEQLEN in SEQ_LENS:
 
-    banned_txt = "/users/d/m/dmatthe1/OtherProjects/CSV/RC_2016-10_banned.txt"
-    notbanned_txt = "/users/d/m/dmatthe1/OtherProjects/CSV/RC_2016-10_notbanned.txt"
+    banned_txt = "../Data/Generated/RC_2016-10_banned.txt"
+    notbanned_txt = "../Data/Generated/RC_2016-10_notbanned.txt"
 
     bannedF = open(banned_txt,"r")
     bannedCnt = int(50000 / (SEQLEN/BASE_SEQLEN)) #len(bannedF.readlines())//SEQLEN
