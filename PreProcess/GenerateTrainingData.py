@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import csv
 
 # How many words per training example?
 SEQLEN = 200
@@ -47,3 +48,11 @@ print(dfTest.head())
 print("Saving Data Frames to file")
 dfTrain.to_pickle(SAVE_FILES%"Train")
 dfTest.to_pickle(SAVE_FILES%"Test")
+
+
+with open("../Data/Generated/RC_2016-10_200_words.csv", "w") as csvfile:
+    writer = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(["banned", "txt"])
+    for b, t in all_posts:
+        writer.writerow([b, ' '.join(t)])
+    
