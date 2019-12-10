@@ -30,10 +30,9 @@ def clean_posts(df,stemmer = None):
 def get_counts_and_rank(df,stemmer = None):
     corpus = clean_posts(df,stemmer).split()
     corpus_counts = Counter(corpus)
-    
     corpus_df = pd.DataFrame.from_dict(corpus_counts, orient='index').reset_index()
     corpus_df = corpus_df.rename(columns={'index':'word', 0:'count'})
-    
+    print(corpus_df.columns)
     corpus_df["rank"] = corpus_df['count'].rank(method = 'average',ascending = False) 
     corpus_df = corpus_df.sort_values(by = ['count'],ascending = False)
     
@@ -84,6 +83,46 @@ def subreddit_data(path1, path2):
     return sr_df, rank_df
 
 
+def subreddit_data_singlefile(path1):
+    df = pd.read_csv(path1).sample(n = 1000)
+    
+#    length = []
+#    for index, row in df.iterrows():
+#        length.append(len(row['words'].split(' ')))
+#    
+#    df['n_words'] = length
+    df = df.rename(columns={"words": "comments"})
+#    
+#    df = df[df['n_words']==200]
+    
+    banned = df[df['banned'] == True]
+    notbanned = df[df['banned'] == False]
+    
+    STEM = WordNetLemmatizer()
+
+    rank_df = get_rank_divergence(banned,notbanned,STEM)
+    
+    return df, rank_df
+
+
+def word200_data(path1, path2):
+    banned = pd.read_csv(path1).sample(n = 1000)
+    print(len(banned))
+    notbanned = pd.read_csv(path2).sample(n = 1000)
+    print(len(notbanned))
+    
+    banned = banned.rename(columns={"words": "comments"})
+    notbanned = notbanned.rename(columns={"words": "comments"})
+    
+    STEM = WordNetLemmatizer()
+        
+    word200_df = banned.append(notbanned)
+    word200_df['banned'] = (len(banned)*[True])+(len(notbanned)*[False])
+    rank_df = get_rank_divergence(banned,notbanned,STEM)
+    
+    return word200_df, rank_df
+
+
 def thread_data(path, min_length = 0, max_length = 100):
     df = pd.read_csv(path)
     df = df[df['n_comments'] > min_length]
@@ -109,10 +148,29 @@ def get_features(df, rank_df):
         corpus = df['comments']
     tfidf = TfidfVectorizer(max_features = len(df))
     
-    
+    print(df.columns)
     # Create feature and target vector
     X = tfidf.fit_transform(corpus)
     y = df['banned']
+    
+    # Transformation
+    rank_div_transform = np.tile(rank_df.rank_div_crude,(X.shape[1],1))
+    X_rankdiv = (X*rank_div_transform)
+    
+    return X_rankdiv, X, y
+
+
+def get_features_unlabeled(df, rank_df, label):
+    # Vectorize words
+    try:
+        corpus = df['posts']
+    except:
+        corpus = df['comments']
+    tfidf = TfidfVectorizer(max_features = len(df))
+    
+    # Create feature and target vector
+    X = tfidf.fit_transform(corpus)
+    y = [label]*len(df)
     
     
     # Transformation
