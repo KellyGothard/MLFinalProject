@@ -37,9 +37,9 @@ def predict(clf, X_test, y_test):
 def main():
 
     # Get data
-    path1 = '../data/200_words_10M_banned.csv'
-    path2 = '../data/200_words_10M_notbanned.csv'
-    pathtest = '../data/200_words_10M_test.csv'
+    path1 = '../Data/200_words_10M_banned.csv'
+    path2 = '../Data/200_words_10M_notbanned.csv'
+    pathtest = '..Ddata/200_words_10M_test.csv'
     
     df, rank_df = proc.word200_data(path1, path2)
     

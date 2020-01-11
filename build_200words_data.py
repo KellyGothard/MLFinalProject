@@ -12,6 +12,8 @@ def get_subreddit_data(filename, banned_subreddits, max_comments=100000):
     with bz2.BZ2File(filename, "r") as f:
         i = 0
         for line in f:
+            if i%1000 ==0:
+                print(i, flush=True)
             if i >= max_comments:
                 break
             i += 1
@@ -113,12 +115,12 @@ def write_test_examples(examples, filename):
             writer.writerow([example["subreddit"], example["banned"], " ".join(example["words"])])
 
     
-data_folder = "/home/nick/downloads/reddit/"
+data_folder = "Data/"
 
 banned_subreddits = read_banned_subreddits(data_folder + "banned-subreddits.txt")
-subreddit_to_comments = get_subreddit_data(data_folder + "RC_2016-10.bz2", banned_subreddits, max_comments=100000)
+subreddit_to_comments = get_subreddit_data(data_folder + "RC_2016-10.bz2", banned_subreddits, max_comments=int(1e6))
 train_banned, train_notbanned, test_examples = split_data(subreddit_to_comments, 0.8)
 
-write_train_examples(train_banned, "banned_200.csv")
-write_train_examples(train_notbanned, "notbanned_200.csv")
-write_test_examples(test_examples, "test_200.csv")
+write_train_examples(train_banned, "Data/Generated/banned_200.csv")
+write_train_examples(train_notbanned, "Data/Generated/notbanned_200.csv")
+write_test_examples(test_examples, "Data/Generated/test_200.csv")
