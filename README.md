@@ -20,6 +20,9 @@ This project creates a model for Reddit’s banning patterns for the purpose of 
 detection of “bannable” content. We explored various algorithms, units of text, and transformations
 to determine the best model for detecting bannable subreddits.
 
+Contributors: Kelly Gothard, Nicholas Hanoian, David Matthews, Colin Sandberg
+
+
 
 ## Data
 We used raw Reddit data, aggregated by and downloaded from https://files.pushshift.io.
