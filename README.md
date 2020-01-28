@@ -2,8 +2,9 @@
 CS 254 Final Project Fall 2019
 
 
-![ROC Curve](docs/paper-src/roc.png)
 
+![ROC Curve](docs/paper-src/roc.png)
+The ROC Curve for our final model which detects bannable content based on blocks of 200 words extracted from comments. 
 
 ## The Project
 
